@@ -1,3 +1,4 @@
+from typing import Union
 from uuid import uuid4
 
 from sqlalchemy import String, Column, DateTime, JSON, select
@@ -49,7 +50,7 @@ async def add_operation(**data):
             return {'status': 'err', 'error': 'Ошибка на стороне БД'}
 
 
-async def get_operations_by_id(tg_id: str):
+async def get_operations_by_tg_id(tg_id: str):
     query = select(UserFile).where(UserFile.user_tg_id == str(tg_id))
     result = session.scalars(query).all()
     json_res = []
@@ -64,3 +65,10 @@ async def get_operations_by_id(tg_id: str):
         })
     session.close()
     return json_res
+
+
+async def get_operation_by_oper_id(oper_id: str) -> Union[UserFile, None]:
+    query = select(UserFile).where(UserFile.operation_id == str(oper_id))
+    result = session.scalars(query).one_or_none()
+    session.close()
+    return result
