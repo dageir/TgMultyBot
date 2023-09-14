@@ -2,6 +2,7 @@ from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 
 from models.eat import users_files
+from models.eat.users_files import get_operation_by_oper_id
 from utils.eat.keyboards import history_ikb, EatsCallback
 
 history_router = Router()
@@ -25,7 +26,7 @@ async def edit_page(callback: types.CallbackQuery, state: FSMContext,
 @history_router.callback_query(F.data == 'eats_operation_history')
 async def get_history_handler(callback: types.CallbackQuery, state: FSMContext) -> None:
     current_data = await state.get_data()
-    all_user_operations = await users_files.get_operations_by_id(callback.from_user.id)
+    all_user_operations = await users_files.get_operations_by_tg_id(callback.from_user.id)
     current_data.update({
         'page_start': 1,
         'page_end': 6,
@@ -43,8 +44,17 @@ async def get_history_handler(callback: types.CallbackQuery, state: FSMContext) 
     await callback.answer()
 
 
-@history_router.callback_query(EatsCallback.filter(F.cb_type == 'download_file'))
+@history_router.callback_query(EatsCallback.filter(F.cb_type.startswith('df')))
 async def download_file_handler(callback: types.CallbackQuery, state: FSMContext) -> None:
+    cb_data = EatsCallback.unpack(callback.data)
+    operation = await get_operation_by_oper_id(cb_data.op_id)
+    if cb_data.cb_type == 'df_v1':
+        await callback.bot.send_document(chat_id=callback.from_user.id,
+                                     document=operation.original_file_id)
+    elif cb_data.cb_type == 'df_v2':
+        await callback.bot.send_document(chat_id=callback.from_user.id,
+                                         document=operation.final_file_id)
+    await state.clear()
     await callback.answer()
 
 
@@ -58,3 +68,5 @@ async def next_page_handler(callback: types.CallbackQuery, state: FSMContext) ->
 async def prev_page_handler(callback: types.CallbackQuery, state: FSMContext) -> None:
     await edit_page(callback, state, -4, -5)
     await callback.answer()
+
+# TODO добавить обработчик кнопки "Выход"

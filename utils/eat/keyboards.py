@@ -19,16 +19,16 @@ main_menu_kb = InlineKeyboardMarkup(inline_keyboard=[
     [back_ik_button]
 ])
 
-# TODO дописать ограничение на номер страницы, чтобы при указании большего индекса не уходил за range списка
+# TODO добавить кнопку "Выход" для удаления сообщения и завершения сессии
 def history_ikb(data: list[dict], page_start: int, page_end: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if page_end > len(data):
         page_end = len(data)
     for i in range(page_start, page_end):
         builder.button(text=data[i]['or_file_name'],
-                       callback_data=EatsCallback(cb_type='download_file', op_id=data[i]['operation_id']))
+                       callback_data=EatsCallback(cb_type='df_v1', op_id=data[i]['operation_id']))
         builder.button(text=data[i]['final_file_name'],
-                       callback_data=EatsCallback(cb_type='download_file', op_id=data[i]['operation_id']))
+                       callback_data=EatsCallback(cb_type='df_v2', op_id=data[i]['operation_id']))
     if page_start != 1:
         builder.button(text='<<', callback_data='eats_history_prev')
     if page_end < len(data):
