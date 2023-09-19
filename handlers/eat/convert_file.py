@@ -7,6 +7,7 @@ from aiogram.types import FSInputFile
 from models.eat.States import FormatFile
 from models.eat import users_files
 from utils.eat.convert_file import convert_file_to_csv, delete_temp_file
+from utils.eat.keyboards import convert_menu_ikb, main_menu_kb
 
 convert_file_router = Router()
 
@@ -14,6 +15,22 @@ TEMP_PATH = 'attachments/eats/temp/'
 
 
 @convert_file_router.callback_query(F.data == 'eats_convert_file')
+async def convert_menu_handler(callback: types.CallbackQuery) -> None:
+    await callback.bot.edit_message_reply_markup(chat_id=callback.from_user.id,
+                                                 message_id=callback.message.message_id,
+                                                 reply_markup=convert_menu_ikb())
+    await callback.answer()
+
+
+@convert_file_router.callback_query(F.data == 'eats_convert_exit')
+async def exit_handler(callback: types.CallbackQuery) -> None:
+    await callback.bot.edit_message_reply_markup(chat_id=callback.from_user.id,
+                                                 message_id=callback.message.message_id,
+                                                 reply_markup=main_menu_kb())
+    await callback.answer()
+
+
+@convert_file_router.callback_query(F.data == 'eats_convert_to_csv')
 async def get_file_handler(callback: types.CallbackQuery, state: FSMContext) -> None:
     await state.set_state(FormatFile.download_file)
     await callback.message.answer(text='Пришлите файл для обработки (расширение xlsx)')
@@ -61,7 +78,7 @@ async def main_menu_handler(message: types.Message, state: FSMContext) -> None:
         document = FSInputFile(path=f'{TEMP_PATH}{current_data["out_file_name_for_bot"]}.csv',
                                filename=f'{current_data["out_file_name_for_user"]}.csv')
         sending_document = await message.bot.send_document(chat_id=message.chat.id,
-                                               document=document)
+                                                           document=document)
         delete_temp_file(f'{TEMP_PATH}{current_data["out_file_name_for_bot"]}.csv')
         await users_files.add_operation(user_id=message.from_user.id,
                                         original_file_id=current_data['file_id'],

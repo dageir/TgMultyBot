@@ -7,8 +7,8 @@ from datetime import datetime
 from typing import Union
 
 
-
 Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -17,6 +17,7 @@ class User(Base):
     login = Column(String(100), nullable=True)
     data = Column(JSON(), default={})
     create_on = Column(DateTime(), nullable=False)
+
 
 def create_user_model():
     Base.metadata.create_all(engine)

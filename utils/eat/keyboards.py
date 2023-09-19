@@ -13,13 +13,25 @@ convert_btn = InlineKeyboardButton(text='Convert file', callback_data='eats_conv
 history = InlineKeyboardButton(text='history', callback_data='eats_operation_history')
 
 
-main_menu_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [convert_btn],
-    [history],
-    [back_ik_button]
-])
+def main_menu_kb() -> InlineKeyboardMarkup:
+    main_menu = InlineKeyboardMarkup(inline_keyboard=[
+        [convert_btn],
+        [history],
+        [back_ik_button]
+    ])
+    return main_menu
 
-# TODO добавить кнопку "Выход" для удаления сообщения и завершения сессии
+
+def convert_menu_ikb() -> InlineKeyboardMarkup:
+    to_csv_btn = InlineKeyboardButton(text='To csv', callback_data='eats_convert_to_csv')
+    exit_btn = InlineKeyboardButton(text='Назад', callback_data='eats_convert_exit')
+    convert_menu = InlineKeyboardMarkup(inline_keyboard=[
+        [to_csv_btn],
+        [exit_btn]
+    ])
+    return convert_menu
+
+
 def history_ikb(data: list[dict], page_start: int, page_end: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if page_end > len(data):
@@ -29,9 +41,16 @@ def history_ikb(data: list[dict], page_start: int, page_end: int) -> InlineKeybo
                        callback_data=EatsCallback(cb_type='df_v1', op_id=data[i]['operation_id']))
         builder.button(text=data[i]['final_file_name'],
                        callback_data=EatsCallback(cb_type='df_v2', op_id=data[i]['operation_id']))
-    if page_start != 1:
+
+    if page_start != 0:
         builder.button(text='<<', callback_data='eats_history_prev')
+    else:
+        builder.button(text='<<', callback_data='eats_history_no_prev')
     if page_end < len(data):
         builder.button(text='>>', callback_data='eats_history_next')
+    else:
+        builder.button(text='>>', callback_data='eats_history_no_next')
+
+    builder.button(text='Назад', callback_data='eats_history_exit')
     builder.adjust(2)
     return builder.as_markup()
