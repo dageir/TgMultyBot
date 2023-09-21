@@ -18,6 +18,8 @@ class User(Base):
     data = Column(JSON(), default={})
     create_on = Column(DateTime(), nullable=False)
 
+    def __repr__(self):
+        return f'{self.tg_id} - {self.login} - {self.name}'
 
 def create_user_model():
     Base.metadata.create_all(engine)
